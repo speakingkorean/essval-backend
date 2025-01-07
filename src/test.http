@@ -1,0 +1,30 @@
+# test API endpoints using REST Client visual studio code extension
+# https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+@hostname = http://localhost:3000
+
+### test localhost
+GET {{hostname}}
+
+### Deprecated upload api
+POST  {{hostname}}/api/upload
+Content-Type: multipart/form-data; boundary=MfnBoundry
+a
+--MfnBoundry
+Content-Disposition: form-data; name="files"; file="test.txt"
+Content-Type: text/plain
+
+< ../assets/test.txt
+--MfnBoundry--
+
+### list obj
+GET {{hostname}}/api/objects
+
+### list titles
+GET {{hostname}}/api/videoTitles
+
+### test putobj
+POST {{hostname}}/api/upload
+
+### get signed url
+GET {{hostname}}/api/signedUrl/SampleVideo_1280x720_1mb.mp4
