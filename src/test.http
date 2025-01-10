@@ -6,10 +6,11 @@
 ### test localhost
 GET {{hostname}}
 
+# s3
+
 ### Deprecated upload api
 POST  {{hostname}}/api/upload
 Content-Type: multipart/form-data; boundary=MfnBoundry
-a
 --MfnBoundry
 Content-Disposition: form-data; name="files"; file="test.txt"
 Content-Type: text/plain
@@ -28,3 +29,20 @@ POST {{hostname}}/api/upload
 
 ### get signed url
 GET {{hostname}}/api/signedUrl/SampleVideo_1280x720_1mb.mp4
+
+### get video duration
+GET {{hostname}}/api/videoDuration/SampleVideo_1280x720_2mb.mp4
+
+# mysql2
+### get notes
+GET {{hostname}}/notes
+
+###
+GET {{hostname}}/notes/1
+
+###
+POST {{hostname}}/notes
+{
+    "title": "new one",
+    "contents": "new content"
+}

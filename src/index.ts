@@ -1,103 +1,67 @@
 import express from 'express'
 import cors from 'cors'
-import { S3Client, ListObjectsCommand, GetObjectCommand, PutObjectCommand, S3ServiceException } from '@aws-sdk/client-s3'
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import s3 from './s3.js';
+import mysql from './database.js';
 import multer from 'multer'
 import dotenv from 'dotenv'
+import { getVideoDurationInSeconds } from 'get-video-duration';
 dotenv.config()
 
-const bucketName = process.env.S3_BUCKET_NAME
-const region = process.env.S3_BUCKET_REGION
-
-const client = new S3Client({
-    region
-})
+const PORT = 3000
 
 const app = express()
 app.use(cors())
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage })
-const PORT = 3000
 
 app.get('/', (req, res) => {
-    res.send(`
-        <h2>File Upload With <code>"Node.js"</code></h2>
-        <form action="/api/upload" enctype="multipart/form-data" method="post">
-          <div>Select a file: 
-            <input type="file" name="file" />
-          </div>
-          <input type="submit" value="Upload" />
-        </form>
-    `)
+    res.send(`  hi  `)
 })
 
 app.get('/api/objects', async (req, res) => {
-    const input = {
-        Bucket: bucketName,
-        MaxKeys: 10
-    }
-    const command = new ListObjectsCommand(input)
-    const response = await client.send(command)
-    res.json(response)
+    res.json(await s3.listObjects())
+})
+
+app.get('/api/videoTitles', async (req, res) => {
+    res.json(await s3.videoTitles())
+})
+
+app.get('/api/signedUrl/:id', async (req, res) => {
+    const id = req.params.id
+    res.json(await s3.presignedUrl(id))
+})
+
+app.get('/api/videoDuration/:id', async (req, res) => {
+    const id = req.params.id
+    const url = await s3.presignedUrl(id)
+    const duration = await getVideoDurationInSeconds(url)
+    res.json(duration)
 })
 
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     const file = req.file
-    console.log(file)
-    const command = new PutObjectCommand({
-        Bucket: bucketName,
-        Key: file?.originalname,
-        Body: file?.buffer,
-        ContentType: file?.mimetype,
-    });
-
-    try {
-        const response = await client.send(command);
-        console.log(response);
-    } catch (caught) {
-        if (
-            caught instanceof S3ServiceException &&
-            caught.name === "EntityTooLarge"
-        ) {
-            console.error(
-                `Error from S3 while uploading object to ${bucketName}. \
-  The object was too large. To upload objects larger than 5GB, use the S3 console (160GB max) \
-  or the multipart upload API (5TB max).`,
-            );
-        } else if (caught instanceof S3ServiceException) {
-            console.error(
-                `Error from S3 while uploading object to ${bucketName}.  ${caught.name}: ${caught.message}`,
-            );
-        } else {
-            throw caught;
-        }
-    }
+    res.json(await s3.uploadFile(file))
 })
 
-app.get('/api/videoTitles', async (req, res) => {
-    const input = {
-        Bucket: bucketName,
-        MaxKeys: 100
-    }
-    const command = new ListObjectsCommand(input)
-    const response = await client.send(command)
-    const contents = response.Contents
-    const videoNames = contents?.map((content) => content.Key)
-    res.json(videoNames)
+app.get("/notes", async (req, res) => {
+    res.send(await mysql.getNotes())
 })
 
-app.get('/api/signedUrl/:title', async (req, res) => {
-    // "Key": "Saintway – Here Comes The Fire.mp4",
-    const title = req.params.title
-    const input = {
-        Bucket: bucketName,
-        Key: title,
-    }
-    const command = new GetObjectCommand(input)
-    const url = await getSignedUrl(client, command, { expiresIn: 3600 })
-    res.json({ url })
+app.get("/notes/:id", async (req, res) => {
+    const id = req.params.id
+    res.send(await mysql.getNote(id))
 })
+
+app.post("/notes", async (req, res) => {
+    const { title, contents } = req.body
+    res.status(201).send(await mysql.createNote(title, contents))
+})
+
+// app.use((err: Error, req, res, next) => {
+//     console.error(err.stack)
+//     res.status(500).send('Something broke 💩')
+// })
 
 app.listen(PORT, () => {
     console.log(`Running on Port ${PORT}`)
