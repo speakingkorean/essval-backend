@@ -35,13 +35,13 @@ GET {{hostname}}/api/videoDuration/SampleVideo_1280x720_2mb.mp4
 
 # mysql2
 ### get videos
-GET {{hostname}}/videos
+GET {{hostname}}/video/all
 
 ###
-GET {{hostname}}/video/1
+GET {{hostname}}/video/find/1
 
 ###
-POST {{hostname}}/newVideo
+POST {{hostname}}/video/new
 Content-Type: application/json
 
 {

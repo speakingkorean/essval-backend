@@ -1,13 +1,11 @@
 import express from 'express'
 import cors from 'cors'
-import s3 from './s3.js';
-import mysql from './database.js';
+import s3 from './s3.js'
+import mysql from './database.js'
+import logger from './logger.js'
 import multer from 'multer'
-import { getVideoDurationInSeconds } from 'get-video-duration';
-import { StatusCodes } from 'http-status-codes';
-
-import dotenv from 'dotenv'
-dotenv.config()
+import { getVideoDurationInSeconds } from 'get-video-duration'
+import { StatusCodes } from 'http-status-codes'
 
 const PORT = 3000
 
@@ -47,16 +45,16 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     res.json(await s3.uploadFile(file))
 })
 
-app.get('/videos', async (req, res) => {
+app.get('/video/all', async (req, res) => {
     res.json(await mysql.getVideos())
 })
 
-app.get('/video/:id', async (req, res) => {
+app.get('/video/find/:id', async (req, res) => {
     const id = req.params.id
     res.json(await mysql.getVideo(+id))
 })
 
-app.post('/newVideo', async (req, res) => {
+app.post('/video/new', async (req, res) => {
     const { title, duration, tags, date } = req.body
     const result = await mysql.uploadVideoWithTags(title, duration, tags, date)
     res.status(StatusCodes.CREATED).json({ result })
@@ -68,5 +66,5 @@ app.post('/newVideo', async (req, res) => {
 // })
 
 app.listen(PORT, () => {
-    console.log(`Running on Port ${PORT}`)
+    logger.info(`Running on Port ${PORT}`)
 })
