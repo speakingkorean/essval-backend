@@ -3,14 +3,17 @@ import cors from 'cors'
 import s3 from './s3.js';
 import mysql from './database.js';
 import multer from 'multer'
-import dotenv from 'dotenv'
 import { getVideoDurationInSeconds } from 'get-video-duration';
+import { StatusCodes } from 'http-status-codes';
+
+import dotenv from 'dotenv'
 dotenv.config()
 
 const PORT = 3000
 
 const app = express()
 app.use(cors())
+app.use(express.json())
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage })
@@ -44,18 +47,19 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     res.json(await s3.uploadFile(file))
 })
 
-app.get("/notes", async (req, res) => {
-    res.send(await mysql.getNotes())
+app.get('/videos', async (req, res) => {
+    res.json(await mysql.getVideos())
 })
 
-app.get("/notes/:id", async (req, res) => {
+app.get('/video/:id', async (req, res) => {
     const id = req.params.id
-    res.send(await mysql.getNote(id))
+    res.json(await mysql.getVideo(+id))
 })
 
-app.post("/notes", async (req, res) => {
-    const { title, contents } = req.body
-    res.status(201).send(await mysql.createNote(title, contents))
+app.post('/newVideo', async (req, res) => {
+    const { title, duration, tags, date } = req.body
+    const result = await mysql.uploadVideoWithTags(title, duration, tags, date)
+    res.status(StatusCodes.CREATED).json({ result })
 })
 
 // app.use((err: Error, req, res, next) => {

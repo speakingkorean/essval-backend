@@ -21,6 +21,8 @@ CREATE TABLE tags (
   name NVARCHAR(64) NOT NULL
 );
 
+-- index on name
+
 INSERT INTO tags (name)
 VALUES
 ('tag1'),
@@ -28,12 +30,14 @@ VALUES
 ('tag3')
 ;
 
+drop table videos_tags;
+
 CREATE TABLE videos_tags (
   video_id BIGINT UNSIGNED,
   tag_id BIGINT UNSIGNED,
-  PRIMARY KEY (video_id, tag_id),
-  FOREIGN KEY (video_id) REFERENCES tags(id),
-  FOREIGN KEY (tag_id) REFERENCES videos(id)
+  PRIMARY KEY (video_id, tag_id)
+  -- FOREIGN KEY (video_id) REFERENCES tags(id),
+  -- FOREIGN KEY (tag_id) REFERENCES videos(id)
 );
 
 INSERT INTO videos_tags (video_id, tag_id)

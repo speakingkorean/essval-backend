@@ -34,15 +34,22 @@ GET {{hostname}}/api/signedUrl/SampleVideo_1280x720_1mb.mp4
 GET {{hostname}}/api/videoDuration/SampleVideo_1280x720_2mb.mp4
 
 # mysql2
-### get notes
-GET {{hostname}}/notes
+### get videos
+GET {{hostname}}/videos
 
 ###
-GET {{hostname}}/notes/1
+GET {{hostname}}/video/1
 
 ###
-POST {{hostname}}/notes
+POST {{hostname}}/newVideo
+Content-Type: application/json
+
 {
-    "title": "new one",
-    "contents": "new content"
+    "title": "vid with tag2",
+    "duration": 120,
+    "tags": [
+        "tag2"
+    ]
 }
+###
+
